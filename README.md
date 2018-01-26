@@ -14,6 +14,8 @@ Intro 简介
 如果需要接入更多柜台请通过 [Taurus.ai](http://taurus.ai) 官网联系我们。
 开发者也可根据长拳标准自行开发新的柜台接口。
 
+更多介绍请关注知乎专栏 [硅商冲击](https://zhuanlan.zhihu.com/silicontrader)。
+
 License
 ==========
 
@@ -273,6 +275,17 @@ $ wingchun report -n band_demo -a
 ```
 
 注：以上样例主要展示功能性，延迟具体数字在开发机上得到，不具备参考性。关于如何得到更优的延迟数字，稍后会添加相关文档说明。
+
+Version 版本
+=============
+
+* 0.0.1:
+    初始化版本
+* 0.0.2:
+    * 修正了 PosHandler 的一个 update 情况的潜在风险
+    * 修正没有 close 的 file 句柄
+    * 修正了 memcpy 的潜在越界问题
+    * 编译选项优化为 O3
 
 Contribute 开发
 =============

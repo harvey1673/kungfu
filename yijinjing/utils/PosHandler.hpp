@@ -60,13 +60,19 @@ public:
     void init(const string& js_str)
     {
         json _js = json::parse(js_str);
-        is_poisoned = !_js["ok"];
-        positions = _js["Pos"];
-        source = _js["Source"];
+        init_js(_js);
+    }
+
+    void init_js(json js)
+    {
+        is_poisoned = !js["ok"];
+        positions = js["Pos"];
+        source = js["Source"];
     }
 
     static PosHandlerPtr create(short source);
     static PosHandlerPtr create(short source, const string& js_str);
+    static PosHandlerPtr create(short source, json js);
 
     inline string to_string() const
     {
@@ -326,13 +332,15 @@ protected:
             {
                 // first open first close, for all four future exchange in China
                 LfPosiDirectionType position_dir = (direction == LF_CHAR_Buy) ? LF_CHAR_Short : LF_CHAR_Long;
+                // if there is yesterday position, minus
+                int yd = pos_array[POS_ARRAY_IDX(position_dir, YESTD_INDEX)].get<int>() - volume;
+                if (yd >= 0)
+                    pos_array[POS_ARRAY_IDX(position_dir, YESTD_INDEX)] = yd;
+                // then tot position needs to be revised.
                 int tot = pos_array[POS_ARRAY_IDX(position_dir, TOTAL_INDEX)].get<int>() - volume;
                 if (tot < pos_array[POS_ARRAY_IDX(position_dir, YESTD_INDEX)] || tot < 0)
                     is_poisoned = true;
                 pos_array[POS_ARRAY_IDX(position_dir, TOTAL_INDEX)] = tot;
-                int yd = pos_array[POS_ARRAY_IDX(position_dir, YESTD_INDEX)].get<int>() - volume;
-                if (yd >= 0)
-                    pos_array[POS_ARRAY_IDX(position_dir, YESTD_INDEX)] = yd;
                 break;
             }
             case LF_CHAR_CloseToday:
@@ -375,6 +383,13 @@ inline PosHandlerPtr PosHandler::create(short source, const string& js_str)
 {
     PosHandlerPtr res = PosHandlerPtr(new PosHandler(source));
     res->init(js_str);
+    return res;
+}
+
+inline PosHandlerPtr PosHandler::create(short source, json js)
+{
+    PosHandlerPtr res = PosHandlerPtr(new PosHandler(source));
+    res->init_js(js);
     return res;
 }
 
